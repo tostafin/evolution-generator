@@ -42,13 +42,29 @@ public class App extends Application implements IPositionChangeObserver {
         HBox heightInputHBox = new HBox(heightInputLabel, heightInput);
         heightInputHBox.setAlignment(Pos.CENTER);
 
-        TextField energyInput = new TextField("7");
-        Label energyInputLabel = new Label("Animal's energy: ");
-        HBox energyInputHBox = new HBox(energyInputLabel, energyInput);
-        energyInputHBox.setAlignment(Pos.CENTER);
+        TextField startEnergyInput = new TextField("7");
+        Label startEnergyInputLabel = new Label("Animal's start energy: ");
+        HBox startEnergyInputHBox = new HBox(startEnergyInputLabel, startEnergyInput);
+        startEnergyInputHBox.setAlignment(Pos.CENTER);
+
+        TextField moveEnergyInput = new TextField("7");
+        Label moveEnergyInputLabel = new Label("Animal's move energy: ");
+        HBox moveEnergyInputHBox = new HBox(moveEnergyInputLabel, moveEnergyInput);
+        moveEnergyInputHBox.setAlignment(Pos.CENTER);
+
+        TextField plantEnergyInput = new TextField("7");
+        Label plantEnergyInputLabel = new Label("Plant's energy: ");
+        HBox plantEnergyInputHBox = new HBox(plantEnergyInputLabel, plantEnergyInput);
+        plantEnergyInputHBox.setAlignment(Pos.CENTER);
+
+        TextField jungleRatioInput = new TextField("7");
+        Label jungleRatioLabel = new Label("Jungle ratio: ");
+        HBox jungleRatioHBox = new HBox(jungleRatioLabel, jungleRatioInput);
+        jungleRatioHBox.setAlignment(Pos.CENTER);
 
         Button startSimulation = new Button("Start");
-        VBox inputVBox = new VBox(numOfAnimalsInputHBox, widthInputHBox, heightInputHBox, energyInputHBox, startSimulation);
+        VBox inputVBox = new VBox(numOfAnimalsInputHBox, widthInputHBox, heightInputHBox, startEnergyInputHBox,
+                moveEnergyInputHBox, plantEnergyInputHBox, jungleRatioHBox, startSimulation);
         VBox.setMargin(inputVBox, new Insets(15, 0, 0, 0));
         inputVBox.setSpacing(10);
         inputVBox.setAlignment(Pos.CENTER);
@@ -63,12 +79,16 @@ public class App extends Application implements IPositionChangeObserver {
             this.numOfAnimals = Integer.parseInt(numOfAnimalsInput.getText());
             this.width = Integer.parseInt(widthInput.getText());
             this.height = Integer.parseInt(heightInput.getText());
-            int energy = Integer.parseInt(energyInput.getText());
+            int startEnergy = Integer.parseInt(startEnergyInput.getText());
+            int moveEnergy = Integer.parseInt(moveEnergyInput.getText());
+            int plantEnergy = Integer.parseInt(plantEnergyInput.getText());
+            int jungleRatio = Integer.parseInt(jungleRatioInput.getText());
 
             this.map = new WorldMap(this.width, this.height);
-            this.engine = new SimulationEngine(this.map, this.numOfAnimals, this.width, this.height, energy);
+            this.engine = new SimulationEngine(this.map, this.numOfAnimals, this.width, this.height, startEnergy,
+                    moveEnergy, plantEnergy, jungleRatio);
             this.engine.addObserver(this);
-            this.engine.changeMoveDelay(this.moveDelay);
+            this.engine.setMoveDelay(this.moveDelay);
             this.mapGridPane = new GridPane();
 
             VBox appWindow = new VBox(this.mapGridPane);

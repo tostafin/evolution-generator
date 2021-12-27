@@ -7,7 +7,9 @@ public class WorldMap implements IWorldMap, IPositionChangeObserver {
     private final Vector2d lowerLeft;
     private final Vector2d upperRight;
     private final Map<Vector2d, List<Animal>> animals;
+    private final List<Animal> animalsList;
     private final Map<Vector2d, Grass> grassFields;
+    private final List<IPositionChangeObserver> observers;
 
     public WorldMap(int width, int height) {
         int width1 = width - 1;
@@ -15,7 +17,9 @@ public class WorldMap implements IWorldMap, IPositionChangeObserver {
         this.lowerLeft = new Vector2d(0, 0);
         this.upperRight = new Vector2d(width1, height1);
         this.animals = new LinkedHashMap<>();
+        this.animalsList = new ArrayList<>();
         this.grassFields = new LinkedHashMap<>();
+        this.observers = new LinkedList<>();
         while (this.grassFields.size() < 2) {
             int x = ThreadLocalRandom.current().nextInt(0, width);
             int y = ThreadLocalRandom.current().nextInt(0, height);
@@ -42,6 +46,7 @@ public class WorldMap implements IWorldMap, IPositionChangeObserver {
             samePosAnimals.add(animal);
             samePosAnimals.sort(Comparator.comparing(Animal::getEnergy).reversed());
             this.animals.put(animal.getPosition(), samePosAnimals);
+            this.animalsList.add(animal);
             animal.addObserver(this);
             return true;
         }
@@ -65,13 +70,28 @@ public class WorldMap implements IWorldMap, IPositionChangeObserver {
         return null;
     }
 
+    public void moveAnimals() {
+        for (Animal a : this.animalsList) {
+            Vector2d oldPos = a.getPosition();
+            a.move();
+            Vector2d newPos = a.getPosition();
+            for (IPositionChangeObserver observer : this.observers) {
+                observer.positionChanged(a, oldPos, newPos);
+            }
+        }
+    }
+
+    public void addObserver(IPositionChangeObserver observer) {
+        this.observers.add(observer);
+    }
+
     @Override
     public void positionChanged(Animal animal, Vector2d oldPosition, Vector2d newPosition) {
-        this.animals.get(oldPosition).remove(animal);
-        List<Animal> newSamePosAnimals = this.animals.get(newPosition);
-        if (newSamePosAnimals == null) newSamePosAnimals = new ArrayList<>();
-        newSamePosAnimals.add(animal);
-        newSamePosAnimals.sort(Comparator.comparing(Animal::getEnergy).reversed());
-        this.animals.put(newPosition, newSamePosAnimals);
+            this.animals.get(oldPosition).remove(animal);
+            List<Animal> newSamePosAnimals = this.animals.get(newPosition);
+            if (newSamePosAnimals == null) newSamePosAnimals = new ArrayList<>();
+            newSamePosAnimals.add(animal);
+            newSamePosAnimals.sort(Comparator.comparing(Animal::getEnergy).reversed());
+            this.animals.put(newPosition, newSamePosAnimals);
     }
 }
