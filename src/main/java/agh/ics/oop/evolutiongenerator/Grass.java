@@ -19,4 +19,9 @@ public class Grass implements IMapElement {
     public String getSource() {
         return "src/main/resources/grass.png";
     }
+
+    @Override
+    public int getEnergy() {
+        return -1;
+    }
 }

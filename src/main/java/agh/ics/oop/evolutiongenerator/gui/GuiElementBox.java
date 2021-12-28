@@ -8,33 +8,31 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.VBox;
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-
 public class GuiElementBox {
     public final String source;
     private final Vector2d pos;
+    private final int energy;
     public GuiElementBox(IMapElement iMapElement) {
         this.source = iMapElement.getSource();
         this.pos = iMapElement.getPosition();
+        this.energy = iMapElement.getEnergy();
     }
 
-    public VBox createImage() throws FileNotFoundException {
-        Image image;
-        try {
-            image = new Image(new FileInputStream(this.source));
-        } catch (FileNotFoundException e) {
-            throw new FileNotFoundException("File hasn't been found!");
-        }
+    public VBox createImage(Image image) {
         ImageView elemView = new ImageView(image);
         elemView.setFitHeight(20);
         elemView.setFitWidth(20);
-        Label label;
-        if (this.source.equals("src/main/resources/grass.png")) label = new Label("Trawa");
-        else label = new Label("Z" + this.pos);
-
+        Label nameAndPosLabel;
         VBox vBox = new VBox();
-        vBox.getChildren().addAll(elemView, label);
+        if (this.source.equals("src/main/resources/grass.png")) {
+            nameAndPosLabel = new Label("Trawa");
+            vBox.getChildren().addAll(elemView, nameAndPosLabel);
+        }
+        else {
+            nameAndPosLabel = new Label("Z" + this.pos);
+            Label energyLabel = new Label(String.valueOf(this.energy));
+            vBox.getChildren().addAll(elemView, nameAndPosLabel, energyLabel);
+        }
         vBox.setAlignment(Pos.CENTER);
         return vBox;
     }

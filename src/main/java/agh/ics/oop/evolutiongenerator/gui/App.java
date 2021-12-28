@@ -9,11 +9,16 @@ import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
 import javafx.stage.Stage;
 import agh.ics.oop.evolutiongenerator.*;
 
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 public class App extends Application implements IPositionChangeObserver {
     private WorldMap map;
@@ -24,6 +29,34 @@ public class App extends Application implements IPositionChangeObserver {
     private int width;
     private Scene primaryScene;
     private final int moveDelay = 1000;
+    private final Map<String, Image> images = new LinkedHashMap<>();
+
+    @Override
+    public void init() throws FileNotFoundException {
+        try {
+            images.put("src/main/resources/up.png",
+                    new Image(new FileInputStream("src/main/resources/up.png")));
+            images.put("src/main/resources/up_right.png",
+                    new Image(new FileInputStream("src/main/resources/up_right.png")));
+            images.put("src/main/resources/right.png",
+                    new Image(new FileInputStream("src/main/resources/right.png")));
+            images.put("src/main/resources/down_right.png",
+                    new Image(new FileInputStream("src/main/resources/down_right.png")));
+            images.put("src/main/resources/down.png",
+                    new Image(new FileInputStream("src/main/resources/down_left.png")));
+            images.put("src/main/resources/down_left.png",
+                    new Image(new FileInputStream("src/main/resources/down_left.png")));
+            images.put("src/main/resources/left.png",
+                    new Image(new FileInputStream("src/main/resources/left.png")));
+            images.put("src/main/resources/up_left.png",
+                    new Image(new FileInputStream("src/main/resources/up_left.png")));
+            images.put("src/main/resources/grass.png",
+                    new Image(new FileInputStream("src/main/resources/grass.png")));
+
+        } catch (FileNotFoundException e) {
+            throw new FileNotFoundException("File hasn't been found!");
+        }
+    }
 
     @Override
     public void start(Stage primaryStage) {
@@ -130,15 +163,11 @@ public class App extends Application implements IPositionChangeObserver {
             for (int j = 0; j < this.width; j++) {
                 IMapElement elem = (IMapElement) this.map.objectAt(new Vector2d(j, i));
                 if (elem != null) {
-                    try {
-                        VBox vBox;
-                        vBox = new GuiElementBox(elem).createImage();
-                        GridPane.setConstraints(vBox, j, this.height - i - 1);
-                        GridPane.setHalignment(vBox, HPos.CENTER);
-                        this.mapGridPane.add(vBox, j, this.height - i - 1);
-                    } catch (FileNotFoundException e) {
-                        e.printStackTrace();
-                    }
+                    VBox vBox;
+                    vBox = new GuiElementBox(elem).createImage(this.images.get(elem.getSource()));
+                    GridPane.setConstraints(vBox, j, this.height - i - 1);
+                    GridPane.setHalignment(vBox, HPos.CENTER);
+                    this.mapGridPane.add(vBox, j, this.height - i - 1);
                 } else {
                     Label label = new Label();
                     GridPane.setConstraints(label, j, this.height - i - 1);

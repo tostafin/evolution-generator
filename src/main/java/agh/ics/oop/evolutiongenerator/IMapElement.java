@@ -4,4 +4,6 @@ public interface IMapElement {
     String getSource();
 
     Vector2d getPosition();
+
+    int getEnergy();
 }
