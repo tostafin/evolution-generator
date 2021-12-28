@@ -69,7 +69,7 @@ public class App extends Application implements IPositionChangeObserver {
 
     @Override
     public void start(Stage primaryStage) {
-        TextField numOfAnimalsInput = new TextField("10");
+        TextField numOfAnimalsInput = new TextField("15");
         Label numOfAnimalsLabel = new Label("Number of animals: ");
         HBox numOfAnimalsInputHBox = new HBox(numOfAnimalsLabel, numOfAnimalsInput);
         numOfAnimalsInputHBox.setAlignment(Pos.CENTER);
@@ -84,12 +84,12 @@ public class App extends Application implements IPositionChangeObserver {
         HBox heightInputHBox = new HBox(heightInputLabel, heightInput);
         heightInputHBox.setAlignment(Pos.CENTER);
 
-        TextField startEnergyInput = new TextField("20");
+        TextField startEnergyInput = new TextField("40");
         Label startEnergyInputLabel = new Label("Animal's start energy: ");
         HBox startEnergyInputHBox = new HBox(startEnergyInputLabel, startEnergyInput);
         startEnergyInputHBox.setAlignment(Pos.CENTER);
 
-        TextField moveEnergyInput = new TextField("1");
+        TextField moveEnergyInput = new TextField("2");
         Label moveEnergyInputLabel = new Label("Animal's move energy: ");
         HBox moveEnergyInputHBox = new HBox(moveEnergyInputLabel, moveEnergyInput);
         moveEnergyInputHBox.setAlignment(Pos.CENTER);
@@ -113,7 +113,7 @@ public class App extends Application implements IPositionChangeObserver {
 
         primaryStage.setTitle("World map");
 
-        this.scene = new Scene(inputVBox, 1200, 1000);
+        this.scene = new Scene(inputVBox, 1800, 1000);
         primaryStage.setScene(this.scene);
         primaryStage.show();
 

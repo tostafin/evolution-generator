@@ -36,6 +36,10 @@ public class Animal implements IMapElement {
         return animalsPos;
     }
 
+    public MapDirection getAnimalsDir() {
+        return this.animalsDir;
+    }
+
     public Genotype getGenotype() {
         return this.genotype;
     }
