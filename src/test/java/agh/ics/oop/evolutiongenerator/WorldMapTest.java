@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 class WorldMapTest {
-    WorldMap worldMap = new WorldMap(11, 11, 10, 10, 2, 2,
+    WorldMap worldMap = new WorldMap(11, 11, 10, 10, 10, 2, 2,
             new Vector2d(4, 4), new Vector2d(6, 6));
     Animal animalGregory = new Animal(this.worldMap, new Vector2d(2, 2), 4);
     Animal animalJohannes = new Animal(this.worldMap, new Vector2d(4, 7), 4);
