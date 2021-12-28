@@ -10,9 +10,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
-import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import agh.ics.oop.evolutiongenerator.*;
 
@@ -31,7 +29,8 @@ public class App extends Application implements IPositionChangeObserver {
     private Vector2d jungleLowerLeft;
     private Vector2d jungleUpperRight;
     private Scene primaryScene;
-    private final int moveDelay = 1000;
+    private final int moveDelay = 500;
+    private final int cellSize = 65;
     private final Map<String, Image> images = new LinkedHashMap<>();
 
     @Override
@@ -63,7 +62,7 @@ public class App extends Application implements IPositionChangeObserver {
 
     @Override
     public void start(Stage primaryStage) {
-        TextField numOfAnimalsInput = new TextField("2");
+        TextField numOfAnimalsInput = new TextField("10");
         Label numOfAnimalsLabel = new Label("Number of animals: ");
         HBox numOfAnimalsInputHBox = new HBox(numOfAnimalsLabel, numOfAnimalsInput);
         numOfAnimalsInputHBox.setAlignment(Pos.CENTER);
@@ -127,13 +126,7 @@ public class App extends Application implements IPositionChangeObserver {
             this.jungleUpperRight = new Vector2d(this.jungleLowerLeft.x + jungleWidth,
                     this.jungleLowerLeft.y + jungleHeight);
 
-            this.map = new WorldMap(this.width, this.height, moveEnergy, plantEnergy, this.jungleLowerLeft,
-                    this.jungleUpperRight);
-            this.engine = new SimulationEngine(this.map, this.numOfAnimals, this.width, this.height, startEnergy);
-            this.engine.addObserver(this);
-            this.engine.setMoveDelay(this.moveDelay);
             this.mapGridPane = new GridPane();
-
             VBox appWindow = new VBox(this.mapGridPane);
             appWindow.setAlignment(Pos.CENTER);
             this.mapGridPane.setAlignment(Pos.CENTER);
@@ -141,22 +134,27 @@ public class App extends Application implements IPositionChangeObserver {
             primaryStage.setScene(this.primaryScene);
 
             for (int i = 0; i < this.width; i++) {
-                ColumnConstraints columnConstraints = new ColumnConstraints(50);
+                ColumnConstraints columnConstraints = new ColumnConstraints(this.cellSize);
                 this.mapGridPane.getColumnConstraints().add(columnConstraints);
             }
 
             for (int i = 0; i < this.height; i++) {
-                RowConstraints rowConstraints = new RowConstraints(50);
+                RowConstraints rowConstraints = new RowConstraints(this.cellSize);
                 this.mapGridPane.getRowConstraints().add(rowConstraints);
             }
 
+            this.map = new WorldMap(this.width, this.height, moveEnergy, plantEnergy, jungleWidth, jungleHeight,
+                    this.jungleLowerLeft, this.jungleUpperRight);
+            this.engine = new SimulationEngine(this.map, this.numOfAnimals, this.width, this.height, startEnergy);
+            this.engine.addObserver(this);
+            this.engine.setMoveDelay(this.moveDelay);
+
+            Thread engineThread = new Thread(this.engine);
             try {
                 this.drawCurrMap();
             } catch (FileNotFoundException e) {
                 e.printStackTrace();
             }
-
-            Thread engineThread = new Thread(this.engine);
             engineThread.start();
         });
         primaryStage.setOnCloseRequest(e -> {
@@ -166,6 +164,7 @@ public class App extends Application implements IPositionChangeObserver {
     }
 
     public void drawCurrMap() throws FileNotFoundException {
+//        System.out.println("RYSOWANIE START");
         this.mapGridPane.setGridLinesVisible(false);
         this.mapGridPane.setGridLinesVisible(true);
 
@@ -180,8 +179,8 @@ public class App extends Application implements IPositionChangeObserver {
                     this.mapGridPane.add(vBox, j, this.height - i - 1);
                 } else {
                     Label label = new Label();
-                    label.setMinWidth(50);
-                    label.setMinHeight(50);
+                    label.setMinWidth(this.cellSize);
+                    label.setMinHeight(this.cellSize);
                     if (this.jungleLowerLeft.x <= j && j <= this.jungleUpperRight.x &&
                             this.jungleLowerLeft.y <= i && i <= this.jungleUpperRight.y) {
                         label.setStyle("-fx-background-color: #0f451d");

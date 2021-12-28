@@ -2,7 +2,6 @@ package agh.ics.oop.evolutiongenerator;
 
 import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
-import java.util.stream.Collectors;
 
 public class WorldMap implements IWorldMap, IPositionChangeObserver {
     private final int width;
@@ -11,31 +10,37 @@ public class WorldMap implements IWorldMap, IPositionChangeObserver {
     private final Vector2d upperRight;
     private final Vector2d jungleLowerLeft;
     private final Vector2d jungleUpperRight;
+    private final int mapSize;
+    private final int jungleSize;
     private final Map<Vector2d, List<Animal>> animals;
     private final List<Animal> animalsList;
-    private final List<Animal> deadAnimalsList;
+    private final Map<Animal, Vector2d> jungleAnimals;
     private final Map<Vector2d, Grass> grassFields;
-    private int numOfGrassFields;
+    private int steppeGrassFieldsNum;
+    private int jungleGrassFieldsNum;
     private final List<IPositionChangeObserver> observers;
     private final int moveEnergy;
     private final int plantEnergy;
 
-    public WorldMap(int width, int height, int moveEnergy, int plantEnergy, Vector2d jungleLowerLeft, Vector2d jungleUpperRight) {
+    public WorldMap(int width, int height, int moveEnergy, int plantEnergy, int jungleWidth, int jungleHeight,
+                    Vector2d jungleLowerLeft, Vector2d jungleUpperRight) {
         this.width = width;
         this.height = height;
         this.lowerLeft = new Vector2d(0, 0);
         this.upperRight = new Vector2d(this.width - 1, this.height - 1);
         this.jungleLowerLeft = jungleLowerLeft;
         this.jungleUpperRight = jungleUpperRight;
+        this.mapSize = this.width * this.height;
+        this.jungleSize = (jungleWidth + 1) * (jungleHeight + 1);
         this.animals = new LinkedHashMap<>();
         this.animalsList = new ArrayList<>();
-        this.deadAnimalsList = new ArrayList<>();
+        this.jungleAnimals = new LinkedHashMap<>();
         this.grassFields = new LinkedHashMap<>();
-        this.numOfGrassFields = 0;
+        this.steppeGrassFieldsNum = 0;
+        this.jungleGrassFieldsNum = 0;
         this.observers = new LinkedList<>();
         this.moveEnergy = moveEnergy;
         this.plantEnergy = plantEnergy;
-        this.addGrassFields();
     }
 
     public List<Animal> getAnimalsList() {
@@ -58,6 +63,7 @@ public class WorldMap implements IWorldMap, IPositionChangeObserver {
             samePosAnimals.sort(Comparator.comparing(Animal::getEnergy).reversed());
             this.animals.put(animal.getPosition(), samePosAnimals);
             this.animalsList.add(animal);
+            if (isInJungle(animal.getPosition())) this.jungleAnimals.put(animal, animal.getPosition());
             animal.addObserver(this);
             return true;
         }
@@ -89,7 +95,7 @@ public class WorldMap implements IWorldMap, IPositionChangeObserver {
             Animal animal = iter.next();
             if (animal.getEnergy() <= 0) {
                 this.animals.get(animal.getPosition()).remove(animal);
-                this.deadAnimalsList.add(animal);
+                this.jungleAnimals.remove(animal);
                 iter.remove();
                 for (IPositionChangeObserver observer : this.observers) {
                     observer.positionChanged(animal, animal.getPosition(), new Vector2d(-1, -1));
@@ -103,6 +109,8 @@ public class WorldMap implements IWorldMap, IPositionChangeObserver {
             Vector2d oldPos = a.getPosition();
             a.move(this.moveEnergy);
             Vector2d newPos = a.getPosition();
+            if (this.isInJungle(newPos)) this.jungleAnimals.put(a, newPos);
+            else this.jungleAnimals.remove(a);
             for (IPositionChangeObserver observer : this.observers) {
                 observer.positionChanged(a, oldPos, newPos);
             }
@@ -112,25 +120,45 @@ public class WorldMap implements IWorldMap, IPositionChangeObserver {
     public void eatGrass(Animal animal) {
         if (this.grassFields.get(animal.getPosition()) != null) {
             this.grassFields.remove(animal.getPosition());
-            this.numOfGrassFields--;
+            if (this.isInJungle(animal.getPosition())) this.jungleGrassFieldsNum--;
+            else this.steppeGrassFieldsNum--;
             animal.addEnergy(this.plantEnergy);
         }
     }
 
+    public boolean isInJungle(Vector2d position) {
+        return this.jungleLowerLeft.x <= position.x && position.x <= this.jungleUpperRight.x &&
+                this.jungleLowerLeft.y <= position.y && position.y <= this.jungleUpperRight.y;
+    }
+
     public void addGrassFields() {
-        if (this.numOfGrassFields < this.width * this.height - this.animalsList.size()) {
-            int grassFieldsAdded = 0;
-            while (grassFieldsAdded < 1) {  // TODO: change to < 2 and adjust the condition b/c it won't work that way
+        if (this.jungleGrassFieldsNum < this.jungleSize - this.jungleAnimals.size()) {
+            int jungleGrassFieldsAdded = 0;
+            while (jungleGrassFieldsAdded < 1) {
+                int x = ThreadLocalRandom.current().nextInt(this.jungleLowerLeft.x, this.jungleUpperRight.x + 1);
+                int y = ThreadLocalRandom.current().nextInt(this.jungleLowerLeft.y, this.jungleUpperRight.y + 1);
+                Vector2d pos = new Vector2d(x, y);
+                if (!(isOccupied(pos))) {
+                    this.grassFields.put(pos, new Grass(pos));
+                    jungleGrassFieldsAdded++;
+                }
+            }
+            this.jungleGrassFieldsNum += jungleGrassFieldsAdded;
+        }
+
+        if (this.steppeGrassFieldsNum < (this.mapSize - this.jungleSize) -
+                (this.animalsList.size() - this.jungleAnimals.size())) {
+            int steppeGrassFieldsAdded = 0;
+            while (steppeGrassFieldsAdded < 1) {
                 int x = ThreadLocalRandom.current().nextInt(0, this.width);
                 int y = ThreadLocalRandom.current().nextInt(0, this.height);
                 Vector2d pos = new Vector2d(x, y);
-                if (!(isOccupied(pos))) {
-                    Grass grass = new Grass(new Vector2d(x, y));
-                    this.grassFields.put(grass.getPosition(), grass);
-                    grassFieldsAdded++;
+                if (!(isOccupied(pos)) && !(isInJungle(pos))) {
+                    this.grassFields.put(pos, new Grass(pos));
+                    steppeGrassFieldsAdded++;
                 }
             }
-            this.numOfGrassFields += grassFieldsAdded;
+            this.steppeGrassFieldsNum += steppeGrassFieldsAdded;
         }
     }
 
