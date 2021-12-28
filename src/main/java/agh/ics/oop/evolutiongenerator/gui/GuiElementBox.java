@@ -7,6 +7,7 @@ import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.VBox;
+import javafx.scene.text.Font;
 
 public class GuiElementBox {
     public final String source;
@@ -20,17 +21,19 @@ public class GuiElementBox {
 
     public VBox createImage(Image image) {
         ImageView elemView = new ImageView(image);
-        elemView.setFitHeight(20);
-        elemView.setFitWidth(20);
         Label nameAndPosLabel;
         VBox vBox = new VBox();
+        double labelFontSize = 8.5;
         if (this.source.equals("src/main/resources/grass.png")) {
             nameAndPosLabel = new Label("Trawa");
+            nameAndPosLabel.setFont(new Font(labelFontSize));
             vBox.getChildren().addAll(elemView, nameAndPosLabel);
         }
         else {
             nameAndPosLabel = new Label("Z" + this.pos);
+            nameAndPosLabel.setFont(new Font(labelFontSize));
             Label energyLabel = new Label(String.valueOf(this.energy));
+            energyLabel.setFont(new Font(labelFontSize));
             vBox.getChildren().addAll(elemView, nameAndPosLabel, energyLabel);
         }
         vBox.setAlignment(Pos.CENTER);

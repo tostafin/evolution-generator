@@ -67,7 +67,7 @@ public class WorldMap implements IWorldMap, IPositionChangeObserver {
             animal.addObserver(this);
             return true;
         }
-        return false;
+        throw new IllegalArgumentException("Invalid animal's position.");
     }
 
     @Override

@@ -12,8 +12,6 @@ public class Animal implements IMapElement {
     private final List<IPositionChangeObserver> observers;
     private final Genotype genotype;
     private int energy;
-    private int daysAlive;
-    private boolean isAlive;
 
     public Animal(WorldMap map, Vector2d initialPosition, int startEnergy) {
         this.map = map;
@@ -22,8 +20,6 @@ public class Animal implements IMapElement {
         this.observers = new LinkedList<>();
         this.genotype = new Genotype();
         this.energy = startEnergy;
-        this.daysAlive = 0;
-        this.isAlive = true;
     }
 
     @Override
@@ -117,16 +113,10 @@ public class Animal implements IMapElement {
                 break;
         }
         this.energy -= moveEnergy;
-        if (this.energy > 0) this.daysAlive++;
-        else this.isAlive = false;
     }
 
     public void addObserver(IPositionChangeObserver observer) {
         this.observers.add(observer);
-    }
-
-    public void removeObserver(IPositionChangeObserver observer) {
-        this.observers.remove(observer);
     }
 
     public void positionChanged(Vector2d oldPosition, Vector2d newPosition) {

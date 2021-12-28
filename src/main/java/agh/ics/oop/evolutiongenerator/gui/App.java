@@ -28,32 +28,32 @@ public class App extends Application implements IPositionChangeObserver {
     private int width;
     private Vector2d jungleLowerLeft;
     private Vector2d jungleUpperRight;
-    private Scene primaryScene;
-    private final int moveDelay = 500;
-    private final int cellSize = 65;
+    private Scene scene;
+    private final int moveDelay = 1000;
+    private final int cellSize = 40;
     private final Map<String, Image> images = new LinkedHashMap<>();
 
     @Override
     public void init() throws FileNotFoundException {
         try {
             images.put("src/main/resources/up.png",
-                    new Image(new FileInputStream("src/main/resources/up.png")));
+                    new Image(new FileInputStream("src/main/resources/up.png"), 20, 20, false, false));
             images.put("src/main/resources/up_right.png",
-                    new Image(new FileInputStream("src/main/resources/up_right.png")));
+                    new Image(new FileInputStream("src/main/resources/up_right.png"), 20, 20, false, false));
             images.put("src/main/resources/right.png",
-                    new Image(new FileInputStream("src/main/resources/right.png")));
+                    new Image(new FileInputStream("src/main/resources/right.png"), 20, 20, false, false));
             images.put("src/main/resources/down_right.png",
-                    new Image(new FileInputStream("src/main/resources/down_right.png")));
+                    new Image(new FileInputStream("src/main/resources/down_right.png"), 20, 20, false, false));
             images.put("src/main/resources/down.png",
-                    new Image(new FileInputStream("src/main/resources/down_left.png")));
+                    new Image(new FileInputStream("src/main/resources/down.png"), 20, 20, false, false));
             images.put("src/main/resources/down_left.png",
-                    new Image(new FileInputStream("src/main/resources/down_left.png")));
+                    new Image(new FileInputStream("src/main/resources/down_left.png"), 20, 20, false, false));
             images.put("src/main/resources/left.png",
-                    new Image(new FileInputStream("src/main/resources/left.png")));
+                    new Image(new FileInputStream("src/main/resources/left.png"), 20, 20, false, false));
             images.put("src/main/resources/up_left.png",
-                    new Image(new FileInputStream("src/main/resources/up_left.png")));
+                    new Image(new FileInputStream("src/main/resources/up_left.png"), 20, 20, false, false));
             images.put("src/main/resources/grass.png",
-                    new Image(new FileInputStream("src/main/resources/grass.png")));
+                    new Image(new FileInputStream("src/main/resources/grass.png"), 20, 20, false, false));
 
         } catch (FileNotFoundException e) {
             throw new FileNotFoundException("File hasn't been found!");
@@ -106,9 +106,11 @@ public class App extends Application implements IPositionChangeObserver {
 
         primaryStage.setTitle("World map");
 
-        Scene initialScene = new Scene(inputVBox, 800, 500);
-        primaryStage.setScene(initialScene);
+        this.scene = new Scene(inputVBox, 1200, 1000);
+        primaryStage.setScene(this.scene);
         primaryStage.show();
+
+
 
         startSimulation.setOnAction(event -> {
             this.numOfAnimals = Integer.parseInt(numOfAnimalsInput.getText());
@@ -119,19 +121,19 @@ public class App extends Application implements IPositionChangeObserver {
             int plantEnergy = Integer.parseInt(plantEnergyInput.getText());
             double jungleRatio = Double.parseDouble(jungleRatioInput.getText());
 
+            this.mapGridPane = new GridPane();
+            VBox appWindow = new VBox(this.mapGridPane);
+            appWindow.setAlignment(Pos.CENTER);
+            this.mapGridPane.setAlignment(Pos.CENTER);
+            this.scene = new Scene(appWindow, 1200, 1000);
+            primaryStage.setScene(this.scene);
+
             int jungleWidth = (int) (this.width * jungleRatio);
             int jungleHeight = (int) (this.height * jungleRatio);
             this.jungleLowerLeft = new Vector2d((this.width - jungleWidth) / 2,
                     (this.height - jungleHeight) / 2);
             this.jungleUpperRight = new Vector2d(this.jungleLowerLeft.x + jungleWidth,
                     this.jungleLowerLeft.y + jungleHeight);
-
-            this.mapGridPane = new GridPane();
-            VBox appWindow = new VBox(this.mapGridPane);
-            appWindow.setAlignment(Pos.CENTER);
-            this.mapGridPane.setAlignment(Pos.CENTER);
-            this.primaryScene = new Scene(appWindow, 1000, 800);
-            primaryStage.setScene(this.primaryScene);
 
             for (int i = 0; i < this.width; i++) {
                 ColumnConstraints columnConstraints = new ColumnConstraints(this.cellSize);
@@ -142,19 +144,20 @@ public class App extends Application implements IPositionChangeObserver {
                 RowConstraints rowConstraints = new RowConstraints(this.cellSize);
                 this.mapGridPane.getRowConstraints().add(rowConstraints);
             }
-
             this.map = new WorldMap(this.width, this.height, moveEnergy, plantEnergy, jungleWidth, jungleHeight,
                     this.jungleLowerLeft, this.jungleUpperRight);
-            this.engine = new SimulationEngine(this.map, this.numOfAnimals, this.width, this.height, startEnergy);
-            this.engine.addObserver(this);
-            this.engine.setMoveDelay(this.moveDelay);
 
-            Thread engineThread = new Thread(this.engine);
             try {
                 this.drawCurrMap();
             } catch (FileNotFoundException e) {
                 e.printStackTrace();
             }
+
+            this.engine = new SimulationEngine(this.map, this.numOfAnimals, this.width, this.height, startEnergy);
+            this.engine.addObserver(this);
+            this.engine.setMoveDelay(this.moveDelay);
+
+            Thread engineThread = new Thread(this.engine);
             engineThread.start();
         });
         primaryStage.setOnCloseRequest(e -> {
@@ -164,7 +167,6 @@ public class App extends Application implements IPositionChangeObserver {
     }
 
     public void drawCurrMap() throws FileNotFoundException {
-//        System.out.println("RYSOWANIE START");
         this.mapGridPane.setGridLinesVisible(false);
         this.mapGridPane.setGridLinesVisible(true);
 
@@ -184,8 +186,7 @@ public class App extends Application implements IPositionChangeObserver {
                     if (this.jungleLowerLeft.x <= j && j <= this.jungleUpperRight.x &&
                             this.jungleLowerLeft.y <= i && i <= this.jungleUpperRight.y) {
                         label.setStyle("-fx-background-color: #0f451d");
-                    }
-                    else label.setStyle("-fx-background-color: #41c464");
+                    } else label.setStyle("-fx-background-color: #41c464");
                     GridPane.setConstraints(label, j, this.height - i - 1);
                     GridPane.setHalignment(label, HPos.CENTER);
                     this.mapGridPane.add(label, j, this.height - i - 1);
