@@ -14,7 +14,7 @@ public class GuiElementBox {
     private final Vector2d pos;
     private final int energy;
     public GuiElementBox(IMapElement iMapElement) {
-        this.source = iMapElement.getSource();
+        this.source = iMapElement.getImageSource();
         this.pos = iMapElement.getPosition();
         this.energy = iMapElement.getEnergy();
     }

@@ -1,7 +1,7 @@
 package agh.ics.oop.evolutiongenerator;
 
 public interface IMapElement {
-    String getSource();
+    String getImageSource();
 
     Vector2d getPosition();
 

@@ -36,45 +36,48 @@ public class Animal implements IMapElement {
         return animalsPos;
     }
 
-    public int getEnergy() {
-        return this.energy;
-    }
-
     public Genotype getGenotype() {
         return this.genotype;
+    }
+
+    public int getEnergy() {
+        return this.energy;
     }
 
     public void addEnergy(int energy) {
         this.energy += energy;
     }
 
-    public String toString() {
-        switch (animalsDir) {
+    @Override
+    public String getImageSource() {
+        switch (this.animalsDir) {
             case NORTH:
-                return "N";
+                return "src/main/resources/up.png";
 
             case NORTH_EAST:
-                return "NE";
+                return "src/main/resources/up_right.png";
 
             case EAST:
-                return "E";
+                return "src/main/resources/right.png";
 
             case SOUTH_EAST:
-                return "SE";
+                return "src/main/resources/down_right.png";
 
             case SOUTH:
-                return "S";
+                return "src/main/resources/down.png";
 
             case SOUTH_WEST:
-                return "SW";
+                return "src/main/resources/down_left.png";
 
             case WEST:
-                return "W";
+                return "src/main/resources/left.png";
 
             case NORTH_WEST:
-                return "NW";
+                return "src/main/resources/up_left.png";
+
+            default:
+                return null;
         }
-        return null;
     }
 
     public void move(int moveEnergy) {
@@ -155,40 +158,12 @@ public class Animal implements IMapElement {
         this.observers.add(observer);
     }
 
+    public void removeObserver(IPositionChangeObserver observer) {
+        this.observers.remove(observer);
+    }
+
     public void positionChanged(Vector2d oldPosition, Vector2d newPosition) {
         for (IPositionChangeObserver obs : this.observers) obs.positionChanged(this, oldPosition, newPosition,
                 this.map, this.map.getGridPane());
-    }
-
-    @Override
-    public String getSource() {
-        switch (this.animalsDir) {
-            case NORTH:
-                return "src/main/resources/up.png";
-
-            case NORTH_EAST:
-                return "src/main/resources/up_right.png";
-
-            case EAST:
-                return "src/main/resources/right.png";
-
-            case SOUTH_EAST:
-                return "src/main/resources/down_right.png";
-
-            case SOUTH:
-                return "src/main/resources/down.png";
-
-            case SOUTH_WEST:
-                return "src/main/resources/down_left.png";
-
-            case WEST:
-                return "src/main/resources/left.png";
-
-            case NORTH_WEST:
-                return "src/main/resources/up_left.png";
-
-            default:
-                return null;
-        }
     }
 }

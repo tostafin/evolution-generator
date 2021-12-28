@@ -120,10 +120,11 @@ public class WorldMap implements IWorldMap, IPositionChangeObserver {
             if (animal.getEnergy() <= 0) {
                 this.animals.get(animal.getPosition()).remove(animal);
                 this.jungleAnimals.remove(animal);
+                animal.removeObserver(this);
                 iter.remove();
                 for (IPositionChangeObserver observer : this.observers) {
-                    observer.positionChanged(animal, animal.getPosition(), new Vector2d(-2, -2), this,
-                            this.gridPane);
+                    observer.positionChanged(animal, animal.getPosition(),
+                            new Vector2d(this.lowerLeft.x - 2, this.lowerLeft.y - 2), this, this.gridPane);
                 }
             }
         }

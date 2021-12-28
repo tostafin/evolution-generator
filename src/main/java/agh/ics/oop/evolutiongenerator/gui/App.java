@@ -20,6 +20,9 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class App extends Application implements IPositionChangeObserver {
+    private final int moveDelay = 1000;
+    private final int cellSize = 40;
+    private final Map<String, Image> images = new LinkedHashMap<>();
     private WorldMap boundedMap;
     private WorldMap unboundedMap;
     private GridPane unboundedMapGridPane;
@@ -29,15 +32,16 @@ public class App extends Application implements IPositionChangeObserver {
     private int numOfAnimals;
     private int height;
     private int width;
+    private int startEnergy;
+    private int moveEnergy;
+    private int plantEnergy;
+    private double jungleRatio;
     private Vector2d jungleLowerLeft;
     private Vector2d jungleUpperRight;
     private Scene scene;
-    private final int moveDelay = 1000;
-    private final int cellSize = 40;
-    private final Map<String, Image> images = new LinkedHashMap<>();
 
     @Override
-    public void init() throws FileNotFoundException {
+    public void init() {
         try {
             images.put("src/main/resources/up.png",
                     new Image(new FileInputStream("src/main/resources/up.png"), 20, 20, false, false));
@@ -59,7 +63,7 @@ public class App extends Application implements IPositionChangeObserver {
                     new Image(new FileInputStream("src/main/resources/grass.png"), 20, 20, false, false));
 
         } catch (FileNotFoundException e) {
-            throw new FileNotFoundException("File hasn't been found!");
+            System.out.println("File hasn't been found! " + e);
         }
     }
 
@@ -114,13 +118,17 @@ public class App extends Application implements IPositionChangeObserver {
         primaryStage.show();
 
         startSimulation.setOnAction(event -> {
-            this.numOfAnimals = Integer.parseInt(numOfAnimalsInput.getText());
-            this.width = Integer.parseInt(widthInput.getText());
-            this.height = Integer.parseInt(heightInput.getText());
-            int startEnergy = Integer.parseInt(startEnergyInput.getText());
-            int moveEnergy = Integer.parseInt(moveEnergyInput.getText());
-            int plantEnergy = Integer.parseInt(plantEnergyInput.getText());
-            double jungleRatio = Double.parseDouble(jungleRatioInput.getText());
+            try {
+                this.numOfAnimals = Integer.parseInt(numOfAnimalsInput.getText());
+                this.width = Integer.parseInt(widthInput.getText());
+                this.height = Integer.parseInt(heightInput.getText());
+                this.startEnergy = Integer.parseInt(startEnergyInput.getText());
+                this.moveEnergy = Integer.parseInt(moveEnergyInput.getText());
+                this.plantEnergy = Integer.parseInt(plantEnergyInput.getText());
+                this.jungleRatio = Double.parseDouble(jungleRatioInput.getText());
+            } catch (NumberFormatException e) {
+                System.out.println("Invalid input: all input values must be numbers! " + e);
+            }
 
             this.unboundedMapGridPane = new GridPane();
             this.boundedMapGridPane = new GridPane();
@@ -132,8 +140,8 @@ public class App extends Application implements IPositionChangeObserver {
             this.scene = new Scene(appWindow, 1400, 1000);
             primaryStage.setScene(this.scene);
 
-            int jungleWidth = (int) (this.width * jungleRatio);
-            int jungleHeight = (int) (this.height * jungleRatio);
+            int jungleWidth = (int) (this.width * this.jungleRatio);
+            int jungleHeight = (int) (this.height * this.jungleRatio);
             this.jungleLowerLeft = new Vector2d((this.width - jungleWidth) / 2,
                     (this.height - jungleHeight) / 2);
             this.jungleUpperRight = new Vector2d(this.jungleLowerLeft.x + jungleWidth,
@@ -150,18 +158,20 @@ public class App extends Application implements IPositionChangeObserver {
                 this.unboundedMapGridPane.getRowConstraints().add(rowConstraints);
                 this.boundedMapGridPane.getRowConstraints().add(rowConstraints);
             }
-            this.boundedMap = new WorldMap(false, this.unboundedMapGridPane, this.width, this.height, startEnergy, moveEnergy,
-                    plantEnergy, jungleWidth, jungleHeight, this.jungleLowerLeft, this.jungleUpperRight);
-            this.unboundedMap = new WorldMap(true, this.boundedMapGridPane, this.width, this.height, startEnergy, moveEnergy,
-                    plantEnergy, jungleWidth, jungleHeight, this.jungleLowerLeft, this.jungleUpperRight);
+            this.boundedMap = new WorldMap(false, this.unboundedMapGridPane, this.width, this.height,
+                    this.startEnergy, this.moveEnergy, this.plantEnergy, jungleWidth, jungleHeight,
+                    this.jungleLowerLeft, this.jungleUpperRight);
+            this.unboundedMap = new WorldMap(true, this.boundedMapGridPane, this.width, this.height,
+                    this.startEnergy, this.moveEnergy, this.plantEnergy, jungleWidth, jungleHeight,
+                    this.jungleLowerLeft, this.jungleUpperRight);
 
             this.boundedMapEngine = new SimulationEngine(this.boundedMap, this.numOfAnimals, this.width, this.height,
-                    startEnergy);
+                    this.startEnergy);
             this.boundedMapEngine.addObserver(this);
             this.boundedMapEngine.setMoveDelay(this.moveDelay);
 
             this.unboundedMapEngine = new SimulationEngine(this.unboundedMap, this.numOfAnimals, this.width,
-                    this.height, startEnergy);
+                    this.height, this.startEnergy);
             this.unboundedMapEngine.addObserver(this);
             this.unboundedMapEngine.setMoveDelay(this.moveDelay);
 
@@ -186,7 +196,7 @@ public class App extends Application implements IPositionChangeObserver {
                 IMapElement elem = (IMapElement) map.objectAt(new Vector2d(j, i));
                 if (elem != null) {
                     VBox vBox;
-                    vBox = new GuiElementBox(elem).createImage(this.images.get(elem.getSource()));
+                    vBox = new GuiElementBox(elem).createImage(this.images.get(elem.getImageSource()));
                     GridPane.setConstraints(vBox, j, this.height - i - 1);
                     GridPane.setHalignment(vBox, HPos.CENTER);
                     gridPane.add(vBox, j, this.height - i - 1);
@@ -207,7 +217,8 @@ public class App extends Application implements IPositionChangeObserver {
     }
 
     @Override
-    public void positionChanged(Animal animal, Vector2d oldPosition, Vector2d newPosition, WorldMap map, GridPane gridPane) {
+    public void positionChanged(Animal animal, Vector2d oldPosition, Vector2d newPosition, WorldMap map,
+                                GridPane gridPane) {
         Platform.runLater(() -> {
             gridPane.getChildren().clear();
             try {
