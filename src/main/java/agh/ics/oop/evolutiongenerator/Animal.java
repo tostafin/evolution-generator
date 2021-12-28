@@ -82,10 +82,8 @@ public class Animal implements IMapElement {
         Vector2d oldPos = this.animalsPos;
         switch (move) {
             case 0:
-                if (this.map.canMoveTo(this.animalsPos.add(Objects.requireNonNull(this.animalsDir.toUnitVector())))) {
-                    this.animalsPos = this.animalsPos.add(Objects.requireNonNull(this.animalsDir.toUnitVector()));
-                    this.positionChanged(oldPos, this.animalsPos);
-                }
+                Vector2d newPosForward = this.animalsPos.add(Objects.requireNonNull(this.animalsDir.toUnitVector()));
+                this.moveAnimal(oldPos, newPosForward);
                 break;
 
             case 1:
@@ -104,10 +102,8 @@ public class Animal implements IMapElement {
                 break;
 
             case 4:
-                if (this.map.canMoveTo(this.animalsPos.subtract(Objects.requireNonNull(this.animalsDir.toUnitVector())))) {
-                    this.animalsPos = this.animalsPos.subtract(Objects.requireNonNull(this.animalsDir.toUnitVector()));
-                    this.positionChanged(oldPos, this.animalsPos);
-                }
+                Vector2d newPosBackward = this.animalsPos.subtract(Objects.requireNonNull(this.animalsDir.toUnitVector()));
+                this.moveAnimal(oldPos, newPosBackward);
                 break;
 
             case 5:
@@ -128,12 +124,40 @@ public class Animal implements IMapElement {
         this.energy -= moveEnergy;
     }
 
+    public void moveAnimal(Vector2d oldPos, Vector2d newPos) {
+        if (this.map.isBoundedMap()) {
+            if (this.map.canMoveTo(newPos)) {
+                this.animalsPos = newPos;
+                this.positionChanged(oldPos, this.animalsPos);
+            }
+        }
+        else {
+            this.moveOnBorders(newPos);
+            if (this.animalsPos.equals(oldPos)) {
+                this.animalsPos = newPos;
+            }
+            this.positionChanged(oldPos, this.animalsPos);
+        }
+    }
+
+    public void moveOnBorders(Vector2d newPos) {
+        int upperBoundary = this.map.getUpperRight().y + 1;
+        int rightBoundary = this.map.getUpperRight().x + 1;
+        int lowerBoundary = this.map.getLowerLeft().y - 1;
+        int leftBoundary = this.map.getLowerLeft().x - 1;
+        if (newPos.y == upperBoundary) this.animalsPos = new Vector2d(newPos.x, lowerBoundary + 1);
+        if (newPos.x == rightBoundary) this.animalsPos = new Vector2d(leftBoundary + 1, newPos.y);
+        if (newPos.y == lowerBoundary) this.animalsPos = new Vector2d(newPos.x, upperBoundary - 1);
+        if (newPos.x == leftBoundary) this.animalsPos = new Vector2d(rightBoundary - 1, newPos.y);
+    }
+
     public void addObserver(IPositionChangeObserver observer) {
         this.observers.add(observer);
     }
 
     public void positionChanged(Vector2d oldPosition, Vector2d newPosition) {
-        for (IPositionChangeObserver obs : this.observers) obs.positionChanged(this, oldPosition, newPosition);
+        for (IPositionChangeObserver obs : this.observers) obs.positionChanged(this, oldPosition, newPosition,
+                this.map, this.map.getGridPane());
     }
 
     @Override

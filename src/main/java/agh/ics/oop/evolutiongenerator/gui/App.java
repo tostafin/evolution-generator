@@ -20,16 +20,19 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class App extends Application implements IPositionChangeObserver {
-    private WorldMap map;
-    private GridPane mapGridPane;
-    private SimulationEngine engine;
+    private WorldMap boundedMap;
+    private WorldMap unboundedMap;
+    private GridPane unboundedMapGridPane;
+    private GridPane boundedMapGridPane;
+    private SimulationEngine boundedMapEngine;
+    private SimulationEngine unboundedMapEngine;
     private int numOfAnimals;
     private int height;
     private int width;
     private Vector2d jungleLowerLeft;
     private Vector2d jungleUpperRight;
     private Scene scene;
-    private final int moveDelay = 500;
+    private final int moveDelay = 1000;
     private final int cellSize = 40;
     private final Map<String, Image> images = new LinkedHashMap<>();
 
@@ -110,8 +113,6 @@ public class App extends Application implements IPositionChangeObserver {
         primaryStage.setScene(this.scene);
         primaryStage.show();
 
-
-
         startSimulation.setOnAction(event -> {
             this.numOfAnimals = Integer.parseInt(numOfAnimalsInput.getText());
             this.width = Integer.parseInt(widthInput.getText());
@@ -121,11 +122,14 @@ public class App extends Application implements IPositionChangeObserver {
             int plantEnergy = Integer.parseInt(plantEnergyInput.getText());
             double jungleRatio = Double.parseDouble(jungleRatioInput.getText());
 
-            this.mapGridPane = new GridPane();
-            VBox appWindow = new VBox(this.mapGridPane);
+            this.unboundedMapGridPane = new GridPane();
+            this.boundedMapGridPane = new GridPane();
+            HBox appWindow = new HBox(this.unboundedMapGridPane, this.boundedMapGridPane);
+            appWindow.setSpacing(50);
             appWindow.setAlignment(Pos.CENTER);
-            this.mapGridPane.setAlignment(Pos.CENTER);
-            this.scene = new Scene(appWindow, 1200, 1000);
+            this.unboundedMapGridPane.setAlignment(Pos.CENTER);
+            this.boundedMapGridPane.setAlignment(Pos.CENTER);
+            this.scene = new Scene(appWindow, 1400, 1000);
             primaryStage.setScene(this.scene);
 
             int jungleWidth = (int) (this.width * jungleRatio);
@@ -137,28 +141,35 @@ public class App extends Application implements IPositionChangeObserver {
 
             for (int i = 0; i < this.width; i++) {
                 ColumnConstraints columnConstraints = new ColumnConstraints(this.cellSize);
-                this.mapGridPane.getColumnConstraints().add(columnConstraints);
+                this.unboundedMapGridPane.getColumnConstraints().add(columnConstraints);
+                this.boundedMapGridPane.getColumnConstraints().add(columnConstraints);
             }
 
             for (int i = 0; i < this.height; i++) {
                 RowConstraints rowConstraints = new RowConstraints(this.cellSize);
-                this.mapGridPane.getRowConstraints().add(rowConstraints);
+                this.unboundedMapGridPane.getRowConstraints().add(rowConstraints);
+                this.boundedMapGridPane.getRowConstraints().add(rowConstraints);
             }
-            this.map = new WorldMap(this.width, this.height, startEnergy, moveEnergy, plantEnergy, jungleWidth, jungleHeight,
-                    this.jungleLowerLeft, this.jungleUpperRight);
+            this.boundedMap = new WorldMap(false, this.unboundedMapGridPane, this.width, this.height, startEnergy, moveEnergy,
+                    plantEnergy, jungleWidth, jungleHeight, this.jungleLowerLeft, this.jungleUpperRight);
+            this.unboundedMap = new WorldMap(true, this.boundedMapGridPane, this.width, this.height, startEnergy, moveEnergy,
+                    plantEnergy, jungleWidth, jungleHeight, this.jungleLowerLeft, this.jungleUpperRight);
 
-            try {
-                this.drawCurrMap();
-            } catch (FileNotFoundException e) {
-                e.printStackTrace();
-            }
+            this.boundedMapEngine = new SimulationEngine(this.boundedMap, this.numOfAnimals, this.width, this.height,
+                    startEnergy);
+            this.boundedMapEngine.addObserver(this);
+            this.boundedMapEngine.setMoveDelay(this.moveDelay);
 
-            this.engine = new SimulationEngine(this.map, this.numOfAnimals, this.width, this.height, startEnergy);
-            this.engine.addObserver(this);
-            this.engine.setMoveDelay(this.moveDelay);
+            this.unboundedMapEngine = new SimulationEngine(this.unboundedMap, this.numOfAnimals, this.width,
+                    this.height, startEnergy);
+            this.unboundedMapEngine.addObserver(this);
+            this.unboundedMapEngine.setMoveDelay(this.moveDelay);
 
-            Thread engineThread = new Thread(this.engine);
-            engineThread.start();
+            Thread boundedMapEngine = new Thread(this.boundedMapEngine);
+            boundedMapEngine.start();
+
+            Thread unboundedMapEngine = new Thread(this.unboundedMapEngine);
+            unboundedMapEngine.start();
         });
         primaryStage.setOnCloseRequest(e -> {
             Platform.exit();
@@ -166,19 +177,19 @@ public class App extends Application implements IPositionChangeObserver {
         });
     }
 
-    public void drawCurrMap() throws FileNotFoundException {
-        this.mapGridPane.setGridLinesVisible(false);
-        this.mapGridPane.setGridLinesVisible(true);
+    public void drawCurrMap(WorldMap map, GridPane gridPane) throws FileNotFoundException {
+        gridPane.setGridLinesVisible(false);
+        gridPane.setGridLinesVisible(true);
 
         for (int i = 0; i < this.height; i++) {
             for (int j = 0; j < this.width; j++) {
-                IMapElement elem = (IMapElement) this.map.objectAt(new Vector2d(j, i));
+                IMapElement elem = (IMapElement) map.objectAt(new Vector2d(j, i));
                 if (elem != null) {
                     VBox vBox;
                     vBox = new GuiElementBox(elem).createImage(this.images.get(elem.getSource()));
                     GridPane.setConstraints(vBox, j, this.height - i - 1);
                     GridPane.setHalignment(vBox, HPos.CENTER);
-                    this.mapGridPane.add(vBox, j, this.height - i - 1);
+                    gridPane.add(vBox, j, this.height - i - 1);
                 } else {
                     Label label = new Label();
                     label.setMinWidth(this.cellSize);
@@ -189,18 +200,18 @@ public class App extends Application implements IPositionChangeObserver {
                     } else label.setStyle("-fx-background-color: #41c464");
                     GridPane.setConstraints(label, j, this.height - i - 1);
                     GridPane.setHalignment(label, HPos.CENTER);
-                    this.mapGridPane.add(label, j, this.height - i - 1);
+                    gridPane.add(label, j, this.height - i - 1);
                 }
             }
         }
     }
 
     @Override
-    public void positionChanged(Animal animal, Vector2d oldPosition, Vector2d newPosition) {
+    public void positionChanged(Animal animal, Vector2d oldPosition, Vector2d newPosition, WorldMap map, GridPane gridPane) {
         Platform.runLater(() -> {
-            this.mapGridPane.getChildren().clear();
+            gridPane.getChildren().clear();
             try {
-                this.drawCurrMap();
+                this.drawCurrMap(map, gridPane);
             } catch (FileNotFoundException e) {
                 e.printStackTrace();
             }

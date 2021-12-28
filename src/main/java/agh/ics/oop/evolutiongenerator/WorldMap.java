@@ -1,9 +1,13 @@
 package agh.ics.oop.evolutiongenerator;
 
+import javafx.scene.layout.GridPane;
+
 import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 
 public class WorldMap implements IWorldMap, IPositionChangeObserver {
+    private final boolean boundedMap;
+    private final GridPane gridPane;
     private final int width;
     private final int height;
     private final Vector2d lowerLeft;
@@ -23,8 +27,10 @@ public class WorldMap implements IWorldMap, IPositionChangeObserver {
     private final int startEnergy;
     private final int plantEnergy;
 
-    public WorldMap(int width, int height, int startEnergy, int moveEnergy, int plantEnergy, int jungleWidth,
-                    int jungleHeight, Vector2d jungleLowerLeft, Vector2d jungleUpperRight) {
+    public WorldMap(boolean boundedMap, GridPane gridPane, int width, int height, int startEnergy, int moveEnergy, int plantEnergy,
+                    int jungleWidth, int jungleHeight, Vector2d jungleLowerLeft, Vector2d jungleUpperRight) {
+        this.boundedMap = boundedMap;
+        this.gridPane = gridPane;
         this.width = width;
         this.height = height;
         this.lowerLeft = new Vector2d(0, 0);
@@ -43,6 +49,22 @@ public class WorldMap implements IWorldMap, IPositionChangeObserver {
         this.moveEnergy = moveEnergy;
         this.startEnergy = startEnergy;
         this.plantEnergy = plantEnergy;
+    }
+
+    public boolean isBoundedMap() {
+        return this.boundedMap;
+    }
+
+    public Vector2d getLowerLeft() {
+        return this.lowerLeft;
+    }
+
+    public Vector2d getUpperRight() {
+        return this.upperRight;
+    }
+
+    public GridPane getGridPane() {
+        return this.gridPane;
     }
 
     public List<Animal> getAnimalsList() {
@@ -100,7 +122,8 @@ public class WorldMap implements IWorldMap, IPositionChangeObserver {
                 this.jungleAnimals.remove(animal);
                 iter.remove();
                 for (IPositionChangeObserver observer : this.observers) {
-                    observer.positionChanged(animal, animal.getPosition(), new Vector2d(-1, -1));
+                    observer.positionChanged(animal, animal.getPosition(), new Vector2d(-2, -2), this,
+                            this.gridPane);
                 }
             }
         }
@@ -114,7 +137,7 @@ public class WorldMap implements IWorldMap, IPositionChangeObserver {
             if (this.isInJungle(newPos)) this.jungleAnimals.put(a, newPos);
             else this.jungleAnimals.remove(a);
             for (IPositionChangeObserver observer : this.observers) {
-                observer.positionChanged(a, oldPos, newPos);
+                observer.positionChanged(a, oldPos, newPos, this, this.gridPane);
             }
         }
     }
@@ -188,7 +211,7 @@ public class WorldMap implements IWorldMap, IPositionChangeObserver {
     }
 
     @Override
-    public void positionChanged(Animal animal, Vector2d oldPosition, Vector2d newPosition) {
+    public void positionChanged(Animal animal, Vector2d oldPosition, Vector2d newPosition, WorldMap map, GridPane gridPane) {
             this.animals.get(oldPosition).remove(animal);
             List<Animal> newSamePosAnimals = this.animals.get(newPosition);
             if (newSamePosAnimals == null) newSamePosAnimals = new ArrayList<>();
