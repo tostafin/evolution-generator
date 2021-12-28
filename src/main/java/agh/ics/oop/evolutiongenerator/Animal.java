@@ -15,13 +15,13 @@ public class Animal implements IMapElement {
     private int daysAlive;
     private boolean isAlive;
 
-    public Animal(WorldMap map, Vector2d initialPosition, int energy) {
+    public Animal(WorldMap map, Vector2d initialPosition, int startEnergy) {
         this.map = map;
         this.animalsPos = initialPosition;
         this.animalsDir = MapDirection.values()[ThreadLocalRandom.current().nextInt(0, 8)];
         this.observers = new LinkedList<>();
         this.genotype = new Genotype();
-        this.energy = energy;
+        this.energy = startEnergy;
         this.daysAlive = 0;
         this.isAlive = true;
     }
@@ -64,7 +64,7 @@ public class Animal implements IMapElement {
         return null;
     }
 
-    public void move() {
+    public void move(int moveEnergy) {
         int move = this.genotype.getAnimalsMove();
         Vector2d oldPos = this.animalsPos;
         switch (move) {
@@ -112,13 +112,17 @@ public class Animal implements IMapElement {
                 this.animalsDir = this.animalsDir.previous();
                 break;
         }
-        this.energy--;
+        this.energy -= moveEnergy;
         if (this.energy > 0) this.daysAlive++;
         else this.isAlive = false;
     }
 
     public void addObserver(IPositionChangeObserver observer) {
         this.observers.add(observer);
+    }
+
+    public void removeObserver(IPositionChangeObserver observer) {
+        this.observers.remove(observer);
     }
 
     public void positionChanged(Vector2d oldPosition, Vector2d newPosition) {

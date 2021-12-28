@@ -42,12 +42,12 @@ public class App extends Application implements IPositionChangeObserver {
         HBox heightInputHBox = new HBox(heightInputLabel, heightInput);
         heightInputHBox.setAlignment(Pos.CENTER);
 
-        TextField startEnergyInput = new TextField("7");
+        TextField startEnergyInput = new TextField("20");
         Label startEnergyInputLabel = new Label("Animal's start energy: ");
         HBox startEnergyInputHBox = new HBox(startEnergyInputLabel, startEnergyInput);
         startEnergyInputHBox.setAlignment(Pos.CENTER);
 
-        TextField moveEnergyInput = new TextField("7");
+        TextField moveEnergyInput = new TextField("2");
         Label moveEnergyInputLabel = new Label("Animal's move energy: ");
         HBox moveEnergyInputHBox = new HBox(moveEnergyInputLabel, moveEnergyInput);
         moveEnergyInputHBox.setAlignment(Pos.CENTER);
@@ -84,7 +84,7 @@ public class App extends Application implements IPositionChangeObserver {
             int plantEnergy = Integer.parseInt(plantEnergyInput.getText());
             int jungleRatio = Integer.parseInt(jungleRatioInput.getText());
 
-            this.map = new WorldMap(this.width, this.height);
+            this.map = new WorldMap(this.width, this.height, moveEnergy);
             this.engine = new SimulationEngine(this.map, this.numOfAnimals, this.width, this.height, startEnergy,
                     moveEnergy, plantEnergy, jungleRatio);
             this.engine.addObserver(this);

@@ -32,7 +32,9 @@ public class SimulationEngine implements Runnable {
     @Override
     public void run() {
         while (this.numOfAnimals > 0) {
+            this.mapInstance.removeDeadAnimals();
             this.mapInstance.moveAnimals();
+            this.numOfAnimals = this.mapInstance.getAnimalsList().size();
 
             try {
                 System.out.println("Thread started.");
