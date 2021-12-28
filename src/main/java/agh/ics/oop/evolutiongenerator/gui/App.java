@@ -23,7 +23,7 @@ public class App extends Application implements IPositionChangeObserver {
     private int height;
     private int width;
     private Scene primaryScene;
-    private final int moveDelay = 500;
+    private final int moveDelay = 1000;
 
     @Override
     public void start(Stage primaryStage) {
@@ -52,7 +52,7 @@ public class App extends Application implements IPositionChangeObserver {
         HBox moveEnergyInputHBox = new HBox(moveEnergyInputLabel, moveEnergyInput);
         moveEnergyInputHBox.setAlignment(Pos.CENTER);
 
-        TextField plantEnergyInput = new TextField("7");
+        TextField plantEnergyInput = new TextField("30");
         Label plantEnergyInputLabel = new Label("Plant's energy: ");
         HBox plantEnergyInputHBox = new HBox(plantEnergyInputLabel, plantEnergyInput);
         plantEnergyInputHBox.setAlignment(Pos.CENTER);
@@ -84,9 +84,9 @@ public class App extends Application implements IPositionChangeObserver {
             int plantEnergy = Integer.parseInt(plantEnergyInput.getText());
             int jungleRatio = Integer.parseInt(jungleRatioInput.getText());
 
-            this.map = new WorldMap(this.width, this.height, moveEnergy);
+            this.map = new WorldMap(this.width, this.height, moveEnergy, plantEnergy);
             this.engine = new SimulationEngine(this.map, this.numOfAnimals, this.width, this.height, startEnergy,
-                    moveEnergy, plantEnergy, jungleRatio);
+                    jungleRatio);
             this.engine.addObserver(this);
             this.engine.setMoveDelay(this.moveDelay);
             this.mapGridPane = new GridPane();

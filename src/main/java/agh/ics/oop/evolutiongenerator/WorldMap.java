@@ -13,8 +13,9 @@ public class WorldMap implements IWorldMap, IPositionChangeObserver {
     private final Map<Vector2d, Grass> grassFields;
     private final List<IPositionChangeObserver> observers;
     private final int moveEnergy;
+    private final int plantEnergy;
 
-    public WorldMap(int width, int height, int moveEnergy) {
+    public WorldMap(int width, int height, int moveEnergy, int plantEnergy) {
         int width1 = width - 1;
         int height1 = height - 1;
         this.lowerLeft = new Vector2d(0, 0);
@@ -25,6 +26,7 @@ public class WorldMap implements IWorldMap, IPositionChangeObserver {
         this.grassFields = new LinkedHashMap<>();
         this.observers = new LinkedList<>();
         this.moveEnergy = moveEnergy;
+        this.plantEnergy = plantEnergy;
         while (this.grassFields.size() < 2) {
             int x = ThreadLocalRandom.current().nextInt(0, width);
             int y = ThreadLocalRandom.current().nextInt(0, height);
@@ -73,10 +75,19 @@ public class WorldMap implements IWorldMap, IPositionChangeObserver {
     @Override
     public Object objectAt(Vector2d position) {
         if (this.animals.containsKey(position) && this.animals.get(position).size() != 0) {
-            return this.animals.get(position).get(0);
+            Animal animal = this.animals.get(position).get(0);
+            this.eatGrass(animal);
+            return animal;
         }
         if (this.grassFields.containsKey(position)) return this.grassFields.get(position);
         return null;
+    }
+
+    public void eatGrass(Animal animal) {
+        if (this.grassFields.get(animal.getPosition()) != null) {
+            this.grassFields.remove(animal.getPosition());
+            animal.addEnergy(this.plantEnergy);
+        }
     }
 
     public void removeDeadAnimals() {

@@ -35,6 +35,10 @@ public class Animal implements IMapElement {
         return this.energy;
     }
 
+    public void addEnergy(int energy) {
+        this.energy += energy;
+    }
+
     public String toString() {
         switch (animalsDir) {
             case NORTH:
