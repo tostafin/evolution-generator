@@ -22,6 +22,15 @@ public class Animal implements IMapElement {
         this.energy = startEnergy;
     }
 
+    public Animal(WorldMap map, Vector2d initialPosition, int startEnergy, Genotype genotype) {
+        this.map = map;
+        this.animalsPos = initialPosition;
+        this.animalsDir = MapDirection.values()[ThreadLocalRandom.current().nextInt(0, 8)];
+        this.observers = new LinkedList<>();
+        this.genotype = genotype;
+        this.energy = startEnergy;
+    }
+
     @Override
     public Vector2d getPosition() {
         return animalsPos;
@@ -29,6 +38,10 @@ public class Animal implements IMapElement {
 
     public int getEnergy() {
         return this.energy;
+    }
+
+    public Genotype getGenotype() {
+        return this.genotype;
     }
 
     public void addEnergy(int energy) {

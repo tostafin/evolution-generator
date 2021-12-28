@@ -20,10 +20,11 @@ public class WorldMap implements IWorldMap, IPositionChangeObserver {
     private int jungleGrassFieldsNum;
     private final List<IPositionChangeObserver> observers;
     private final int moveEnergy;
+    private final int startEnergy;
     private final int plantEnergy;
 
-    public WorldMap(int width, int height, int moveEnergy, int plantEnergy, int jungleWidth, int jungleHeight,
-                    Vector2d jungleLowerLeft, Vector2d jungleUpperRight) {
+    public WorldMap(int width, int height, int startEnergy, int moveEnergy, int plantEnergy, int jungleWidth,
+                    int jungleHeight, Vector2d jungleLowerLeft, Vector2d jungleUpperRight) {
         this.width = width;
         this.height = height;
         this.lowerLeft = new Vector2d(0, 0);
@@ -40,6 +41,7 @@ public class WorldMap implements IWorldMap, IPositionChangeObserver {
         this.jungleGrassFieldsNum = 0;
         this.observers = new LinkedList<>();
         this.moveEnergy = moveEnergy;
+        this.startEnergy = startEnergy;
         this.plantEnergy = plantEnergy;
     }
 
@@ -159,6 +161,25 @@ public class WorldMap implements IWorldMap, IPositionChangeObserver {
                 }
             }
             this.steppeGrassFieldsNum += steppeGrassFieldsAdded;
+        }
+    }
+
+    public void reproduceAnimals() {
+        for (var entry : this.animals.entrySet()) {
+            List<Animal> samePosAnimals = entry.getValue();
+            if (samePosAnimals.size() > 1 && samePosAnimals.get(1).getEnergy() >= this.startEnergy / 2) {
+                Animal[] parents = {samePosAnimals.get(0), samePosAnimals.get(1)};
+                Animal newBornAnimal = new Animal(this, parents[0].getPosition(),
+                        (int) (0.25 * parents[0].getEnergy()) + (int) (0.25 * parents[1].getEnergy()),
+                        new Genotype(parents[0], parents[1]));
+                samePosAnimals.add(newBornAnimal);
+                this.animals.put(entry.getKey(), samePosAnimals);
+                this.animalsList.add(newBornAnimal);
+                if (isInJungle(newBornAnimal.getPosition())) this.jungleAnimals.put(newBornAnimal,
+                        newBornAnimal.getPosition());
+                newBornAnimal.addObserver(this);
+            }
+
         }
     }
 

@@ -33,9 +33,9 @@ public class SimulationEngine implements Runnable {
         while (this.numOfAnimals > 0) {
             this.mapInstance.removeDeadAnimals();
             this.mapInstance.moveAnimals();
+            this.mapInstance.reproduceAnimals();
             this.mapInstance.addGrassFields();
             this.numOfAnimals = this.mapInstance.getAnimalsList().size();
-
             try {
 //                System.out.println("Thread started.");
                 Thread.sleep(this.moveDelay);

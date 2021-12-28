@@ -29,7 +29,7 @@ public class App extends Application implements IPositionChangeObserver {
     private Vector2d jungleLowerLeft;
     private Vector2d jungleUpperRight;
     private Scene scene;
-    private final int moveDelay = 1000;
+    private final int moveDelay = 500;
     private final int cellSize = 40;
     private final Map<String, Image> images = new LinkedHashMap<>();
 
@@ -67,12 +67,12 @@ public class App extends Application implements IPositionChangeObserver {
         HBox numOfAnimalsInputHBox = new HBox(numOfAnimalsLabel, numOfAnimalsInput);
         numOfAnimalsInputHBox.setAlignment(Pos.CENTER);
 
-        TextField widthInput = new TextField("11");
+        TextField widthInput = new TextField("15");
         Label widthInputLabel = new Label("Width: ");
         HBox widthInputHBox = new HBox(widthInputLabel, widthInput);
         widthInputHBox.setAlignment(Pos.CENTER);
 
-        TextField heightInput = new TextField("11");
+        TextField heightInput = new TextField("15");
         Label heightInputLabel = new Label("Height: ");
         HBox heightInputHBox = new HBox(heightInputLabel, heightInput);
         heightInputHBox.setAlignment(Pos.CENTER);
@@ -82,7 +82,7 @@ public class App extends Application implements IPositionChangeObserver {
         HBox startEnergyInputHBox = new HBox(startEnergyInputLabel, startEnergyInput);
         startEnergyInputHBox.setAlignment(Pos.CENTER);
 
-        TextField moveEnergyInput = new TextField("2");
+        TextField moveEnergyInput = new TextField("1");
         Label moveEnergyInputLabel = new Label("Animal's move energy: ");
         HBox moveEnergyInputHBox = new HBox(moveEnergyInputLabel, moveEnergyInput);
         moveEnergyInputHBox.setAlignment(Pos.CENTER);
@@ -144,7 +144,7 @@ public class App extends Application implements IPositionChangeObserver {
                 RowConstraints rowConstraints = new RowConstraints(this.cellSize);
                 this.mapGridPane.getRowConstraints().add(rowConstraints);
             }
-            this.map = new WorldMap(this.width, this.height, moveEnergy, plantEnergy, jungleWidth, jungleHeight,
+            this.map = new WorldMap(this.width, this.height, startEnergy, moveEnergy, plantEnergy, jungleWidth, jungleHeight,
                     this.jungleLowerLeft, this.jungleUpperRight);
 
             try {
