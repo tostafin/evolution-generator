@@ -9,6 +9,8 @@ public class WorldMap implements IWorldMap, IPositionChangeObserver {
     private final int height;
     private final Vector2d lowerLeft;
     private final Vector2d upperRight;
+    private final Vector2d jungleLowerLeft;
+    private final Vector2d jungleUpperRight;
     private final Map<Vector2d, List<Animal>> animals;
     private final List<Animal> animalsList;
     private final List<Animal> deadAnimalsList;
@@ -18,11 +20,13 @@ public class WorldMap implements IWorldMap, IPositionChangeObserver {
     private final int moveEnergy;
     private final int plantEnergy;
 
-    public WorldMap(int width, int height, int moveEnergy, int plantEnergy) {
+    public WorldMap(int width, int height, int moveEnergy, int plantEnergy, Vector2d jungleLowerLeft, Vector2d jungleUpperRight) {
         this.width = width;
         this.height = height;
         this.lowerLeft = new Vector2d(0, 0);
         this.upperRight = new Vector2d(this.width - 1, this.height - 1);
+        this.jungleLowerLeft = jungleLowerLeft;
+        this.jungleUpperRight = jungleUpperRight;
         this.animals = new LinkedHashMap<>();
         this.animalsList = new ArrayList<>();
         this.deadAnimalsList = new ArrayList<>();

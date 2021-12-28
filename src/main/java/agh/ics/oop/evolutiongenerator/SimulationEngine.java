@@ -7,8 +7,7 @@ public class SimulationEngine implements Runnable {
     private int moveDelay;
     private int numOfAnimals;
 
-    public SimulationEngine(WorldMap mapInstance, int numOfAnimals, int width, int height, int startEnergy,
-                            int jungleRatio) {
+    public SimulationEngine(WorldMap mapInstance, int numOfAnimals, int width, int height, int startEnergy) {
         this.mapInstance = mapInstance;
         this.moveDelay = 0;
         this.numOfAnimals = numOfAnimals;

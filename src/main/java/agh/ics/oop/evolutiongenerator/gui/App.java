@@ -12,6 +12,7 @@ import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
+import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import agh.ics.oop.evolutiongenerator.*;
 
@@ -27,6 +28,8 @@ public class App extends Application implements IPositionChangeObserver {
     private int numOfAnimals;
     private int height;
     private int width;
+    private Vector2d jungleLowerLeft;
+    private Vector2d jungleUpperRight;
     private Scene primaryScene;
     private final int moveDelay = 1000;
     private final Map<String, Image> images = new LinkedHashMap<>();
@@ -65,12 +68,12 @@ public class App extends Application implements IPositionChangeObserver {
         HBox numOfAnimalsInputHBox = new HBox(numOfAnimalsLabel, numOfAnimalsInput);
         numOfAnimalsInputHBox.setAlignment(Pos.CENTER);
 
-        TextField widthInput = new TextField("6");
+        TextField widthInput = new TextField("11");
         Label widthInputLabel = new Label("Width: ");
         HBox widthInputHBox = new HBox(widthInputLabel, widthInput);
         widthInputHBox.setAlignment(Pos.CENTER);
 
-        TextField heightInput = new TextField("6");
+        TextField heightInput = new TextField("11");
         Label heightInputLabel = new Label("Height: ");
         HBox heightInputHBox = new HBox(heightInputLabel, heightInput);
         heightInputHBox.setAlignment(Pos.CENTER);
@@ -90,7 +93,7 @@ public class App extends Application implements IPositionChangeObserver {
         HBox plantEnergyInputHBox = new HBox(plantEnergyInputLabel, plantEnergyInput);
         plantEnergyInputHBox.setAlignment(Pos.CENTER);
 
-        TextField jungleRatioInput = new TextField("7");
+        TextField jungleRatioInput = new TextField("0.2");
         Label jungleRatioLabel = new Label("Jungle ratio: ");
         HBox jungleRatioHBox = new HBox(jungleRatioLabel, jungleRatioInput);
         jungleRatioHBox.setAlignment(Pos.CENTER);
@@ -115,11 +118,18 @@ public class App extends Application implements IPositionChangeObserver {
             int startEnergy = Integer.parseInt(startEnergyInput.getText());
             int moveEnergy = Integer.parseInt(moveEnergyInput.getText());
             int plantEnergy = Integer.parseInt(plantEnergyInput.getText());
-            int jungleRatio = Integer.parseInt(jungleRatioInput.getText());
+            double jungleRatio = Double.parseDouble(jungleRatioInput.getText());
 
-            this.map = new WorldMap(this.width, this.height, moveEnergy, plantEnergy);
-            this.engine = new SimulationEngine(this.map, this.numOfAnimals, this.width, this.height, startEnergy,
-                    jungleRatio);
+            int jungleWidth = (int) (this.width * jungleRatio);
+            int jungleHeight = (int) (this.height * jungleRatio);
+            this.jungleLowerLeft = new Vector2d((this.width - jungleWidth) / 2,
+                    (this.height - jungleHeight) / 2);
+            this.jungleUpperRight = new Vector2d(this.jungleLowerLeft.x + jungleWidth,
+                    this.jungleLowerLeft.y + jungleHeight);
+
+            this.map = new WorldMap(this.width, this.height, moveEnergy, plantEnergy, this.jungleLowerLeft,
+                    this.jungleUpperRight);
+            this.engine = new SimulationEngine(this.map, this.numOfAnimals, this.width, this.height, startEnergy);
             this.engine.addObserver(this);
             this.engine.setMoveDelay(this.moveDelay);
             this.mapGridPane = new GridPane();
@@ -131,12 +141,12 @@ public class App extends Application implements IPositionChangeObserver {
             primaryStage.setScene(this.primaryScene);
 
             for (int i = 0; i < this.width; i++) {
-                ColumnConstraints columnConstraints = new ColumnConstraints(65);
+                ColumnConstraints columnConstraints = new ColumnConstraints(50);
                 this.mapGridPane.getColumnConstraints().add(columnConstraints);
             }
 
             for (int i = 0; i < this.height; i++) {
-                RowConstraints rowConstraints = new RowConstraints(65);
+                RowConstraints rowConstraints = new RowConstraints(50);
                 this.mapGridPane.getRowConstraints().add(rowConstraints);
             }
 
@@ -170,6 +180,13 @@ public class App extends Application implements IPositionChangeObserver {
                     this.mapGridPane.add(vBox, j, this.height - i - 1);
                 } else {
                     Label label = new Label();
+                    label.setMinWidth(50);
+                    label.setMinHeight(50);
+                    if (this.jungleLowerLeft.x <= j && j <= this.jungleUpperRight.x &&
+                            this.jungleLowerLeft.y <= i && i <= this.jungleUpperRight.y) {
+                        label.setStyle("-fx-background-color: #0f451d");
+                    }
+                    else label.setStyle("-fx-background-color: #41c464");
                     GridPane.setConstraints(label, j, this.height - i - 1);
                     GridPane.setHalignment(label, HPos.CENTER);
                     this.mapGridPane.add(label, j, this.height - i - 1);
